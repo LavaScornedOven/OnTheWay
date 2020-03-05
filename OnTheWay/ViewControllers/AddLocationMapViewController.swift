@@ -33,9 +33,23 @@ class AddLocationMapViewController: UIViewController, WithNewLocation, MKMapView
         
         newLocationMap.addAnnotation(annotation)
         
-        let region = MKCoordinateRegion(center: newLocation.coordinate, span: newLocationMap.region.span)
-        newLocationMap.setRegion(region, animated: animated)
+        // we zoom dynamically, based on the area of the region
+        // Russia is too big for this method :)
+        var zoomRegion: MKCoordinateRegion! = nil
+        if let region = newLocation.region {
+            zoomRegion = MKCoordinateRegion(
+                center: newLocation.coordinate,
+                latitudinalMeters: region.radius/2.0,
+                longitudinalMeters: region.radius/2.0)
+        } else {
+            zoomRegion = MKCoordinateRegion(
+                center: newLocation.coordinate,
+                span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+            )
+        }
         
+        newLocationMap.setRegion(zoomRegion, animated: false)
+        newLocationMap.setCenter(newLocation.coordinate, animated: false)
     }
     
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {

@@ -40,8 +40,8 @@ class StudentsViewController: UITabBarController {
     }
     
     func cancelStudentLocationRetrieval() {
-        self.currentNetworkTask?.cancel()
-        self.currentNetworkTask = nil
+        currentNetworkTask?.cancel()
+        currentNetworkTask = nil
     }
     
     func getStudentLocations() {

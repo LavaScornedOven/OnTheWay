@@ -13,6 +13,7 @@ struct NewLocation {
     var mapString: String
     var mediaUrl: String
     var coordinate: CLLocationCoordinate2D
+    var region: CLCircularRegion?
 }
 
 protocol WithNewLocation {
@@ -50,7 +51,7 @@ class AddLocationViewController: UIViewController, UITextFieldDelegate {
         super.viewWillDisappear(animated)
         
         keyboardHandler.unsubscribe()
-
+        
         if geocoder != nil {
             geocoder.cancelGeocode()
             geocoder = nil
@@ -77,26 +78,24 @@ class AddLocationViewController: UIViewController, UITextFieldDelegate {
         geocoder.geocodeAddressString(mapStringText.text!) {
             (placemarks, error) in
             if error == nil {
-                if let placemark = placemarks?[0] {
-                    let location = placemark.location!
-                        
-                    self.geocodeResponseHandler(coordinate: location.coordinate, error: nil)
+                if let placemark = placemarks?[0] {                    
+                    self.geocodeResponseHandler(placemark: placemark, error: nil)
                     return
                 }
             }
-                
-            self.geocodeResponseHandler(coordinate: kCLLocationCoordinate2DInvalid, error: error)
+            
+            self.geocodeResponseHandler(placemark: nil, error: error)
         }
     }
     
-    func geocodeResponseHandler(coordinate: CLLocationCoordinate2D, error: Error?) {
+    func geocodeResponseHandler(placemark: CLPlacemark!, error: Error?) {
         changeUIState(searching: false)
         if error != nil {
             alert(title: "Geocoding Failed", error: error!, parent: self)
             return
         }
         
-        newLocation = NewLocation(mapString: mapStringText.text!, mediaUrl: mediaUrlText.text!, coordinate: coordinate)
+        newLocation = NewLocation(mapString: mapStringText.text!, mediaUrl: mediaUrlText.text!, coordinate: placemark.location!.coordinate, region: placemark.region as? CLCircularRegion)
         DispatchQueue.main.async {
             self.performSegue(withIdentifier: "showLocation", sender: nil)
         }
@@ -109,11 +108,7 @@ class AddLocationViewController: UIViewController, UITextFieldDelegate {
     }
     
     func changeUIState(searching: Bool) {
-        if searching {
-            activityIndicator.startAnimating()
-        } else {
-            activityIndicator.stopAnimating()
-        }
+        searching ? activityIndicator.startAnimating() : activityIndicator.stopAnimating()
         
         mapStringText.isEnabled = !searching
         mediaUrlText.isEnabled = !searching

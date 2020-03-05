@@ -92,10 +92,6 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         loginButton.alpha = loginButton.isEnabled ? 1.0 : 0.5
         
         signupButton.isEnabled = !loggingIn
-        if loggingIn {
-            activityIndicator.startAnimating()
-        } else {
-            activityIndicator.stopAnimating()
-        }
+        loggingIn ? activityIndicator.startAnimating() : activityIndicator.stopAnimating()
     }
 }
